@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<javascript app="adminer">
+ <file javascript_app="adminer" javascript_location="admin" javascript_path="controllers/click" javascript_name="ips.adminer.changeTheme.js" javascript_type="controller" javascript_version="10002" javascript_position="1000050">;( function($, _, undefined){&#13;
+    &quot;use strict&quot;;&#13;
+    ips.controller.mixin('toolbox.changeTheme', 'core.admin.core.changeTheme', true, function () {&#13;
+        this.after('themePreferenceSelected', function () {&#13;
+           if($('body').hasClass('ipsDarkMode')){&#13;
+               $('#elAdminer').addClass('adminerDarkMode').removeClass('adminerLightMode');&#13;
+           }&#13;
+           else{&#13;
+               $('#elAdminer').removeClass('adminerDarkMode').addClass('adminerLightMode');&#13;
+           }&#13;
+&#13;
+        });&#13;
+&#13;
+    });&#13;
+}(jQuery, _));&#13;
+</file>
+ <file javascript_app="adminer" javascript_location="admin" javascript_path="controllers/click" javascript_name="ips.ui.adminer.click.js" javascript_type="controller" javascript_version="10002" javascript_position="1000050"><![CDATA[;( function($, _, undefined){
+    "use strict";
+    ips.createModule('ips.ui.adminer.click', function(){
+        /**
+         * Respond to a dialog trigger
+         *
+         * @param   {element}   elem        The element this widget is being created on
+         * @param   {object}    options     The options passed
+         * @param   {event}     e           if lazyload, event that is fire
+         * @returns {void}
+         */
+         var respond = function (elem, options, e) {
+            let el = $(elem);
+            if (!el.data('_loadedClickadminer')) {
+                var mobject = new _loadedClickadminer(el, options);
+                mobject.init();
+                el.data('_loadedClickadminer', mobject);
+            }
+        },
+        /**
+         * Retrieve the instance (if any) on the given element
+         *
+         * @param	{element} 	elem 		The element to check
+         * @returns {mixed} 	The instance or undefined
+         */
+        getObj = function (elem) {
+            if( $( elem ).data('_loadedClickadminer') ){
+                return $( elem ).data('_loadedClickadminer');
+            }
+            return undefined;
+        };
+
+        // Register this module as a widget to enable the data API and
+        // jQuery plugin functionality
+        ips.ui.registerWidget( 'adminerclick', ips.ui.adminer.click, [] );
+
+        // Expose public methods
+        return {
+            respond: respond,
+            getObj: getObj
+        };
+    });
+    var _loadedClickadminer = function(elem, options){
+        var init = function(){
+            // elem.on('click','a',function(e){
+            //     e.preventDefault();
+            //     let t = $(this),
+            //         ref = t.attr('href');
+            //     if( ref !== '#' ){
+            //         window.location.href = ips.getSetting('baseURL') +'/admin/?'+ ref + '&app=adminer&module=adminer&controller=adminer';
+            //     }
+            // })
+            //elem.attr('height', $('#acpMainArea').outerHeight()-$('#ipsLayout_header').outerHeight()-$('#acpPageHeader').outerHeight()-50);
+        };
+        return {
+            init: init
+        }
+    };
+ }(jQuery, _));
+]]></file>
+</javascript>

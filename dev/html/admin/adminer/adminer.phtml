@@ -1,0 +1,7 @@
+<ips:template parameters="$content"/>
+
+<div id="elAdminer" class="ipsClearfix {{if isset(\IPS\Request::i()->cookie['acptheme']) AND \IPS\Request::i()->cookie['acptheme'] == 'dark'}} adminerDarkMode{{elseif !isset(\IPS\Request::i()->cookie['acptheme']) AND isset(\IPS\Request::i()->cookie['acpthemedefault']) AND \IPS\Request::i()->cookie['acpthemedefault'] == 'dark'}} adminerDarkMode{{else}} adminerLightMode{{endif}}"  data-ipsadminerclick>
+    <div class="ltr js">
+    {$content|raw}
+    </div>
+</div>

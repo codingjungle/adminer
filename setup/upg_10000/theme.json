@@ -1,0 +1,21 @@
+{
+    "html": {
+        "added": [
+            "admin\/adminer\/adminer"
+        ],
+        "edited": [],
+        "removed": []
+    },
+    "css": {
+        "added": [
+            "admin\/adminer.css"
+        ],
+        "edited": [],
+        "removed": []
+    },
+    "resources": {
+        "added": [],
+        "edited": [],
+        "removed": []
+    }
+}

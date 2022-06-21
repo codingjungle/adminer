@@ -1,0 +1,18 @@
+{
+    "normal": {
+        "added": [
+            "__app_adminer",
+            "menutab__adminer_icon",
+            "menu__adminer_adminer",
+            "menu__adminer_adminer_adminer",
+            "menutab__adminer"
+        ],
+        "edited": [],
+        "removed": []
+    },
+    "js": {
+        "added": [],
+        "edited": [],
+        "removed": []
+    }
+}

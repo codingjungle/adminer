@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language>
+ <app key="adminer" version="10002">
+  <word key="__app_adminer" js="0">Adminer</word>
+  <word key="menutab__adminer_icon" js="0">database</word>
+  <word key="menu__adminer_adminer" js="0">Adminer</word>
+  <word key="menu__adminer_adminer_adminer" js="0">Database Tool</word>
+  <word key="menutab__adminer" js="0">Adminer: Database Tool</word>
+ </app>
+</language>

@@ -1,0 +1,9 @@
+{
+    "admin": {
+        "adminer": {
+            "default_controller": "",
+            "protected": false,
+            "default": null
+        }
+    }
+}

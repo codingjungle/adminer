@@ -1,0 +1,11 @@
+{
+    "adminer": {
+        "adminer": {
+            "tab": "adminer",
+            "controller": "adminer",
+            "do": "",
+            "restriction": "adminer_manage",
+            "subcontrollers": ""
+        }
+    }
+}
