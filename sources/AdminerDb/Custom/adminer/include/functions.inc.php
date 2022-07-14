@@ -613,13 +613,13 @@ function restart_session()
  */
 function stop_session($force = false)
 {
-  $use_cookies = ini_bool("session.use_cookies");
-  if (!$use_cookies || $force) {
-    session_write_close(); // improves concurrency if a user opens several pages at once, may be restarted later
-    if ($use_cookies && @ini_set("session.use_cookies", false) === false) { // @ - may be disabled
-      session_start();
-    }
-  }
+//  $use_cookies = ini_bool("session.use_cookies");
+//  if (!$use_cookies || $force) {
+//    session_write_close(); // improves concurrency if a user opens several pages at once, may be restarted later
+//    if ($use_cookies && @ini_set("session.use_cookies", false) === false) { // @ - may be disabled
+//      session_start();
+//    }
+//  }
 }
 
 /** Get session variable for current server
@@ -674,9 +674,9 @@ function is_ajax()
  * @return null
  */
 function redirect($location, $message = null)
-{ 
+{
   $location = ltrim($location, '?')
-  . (string) '&app=adminer&module=adminer&controller=adminer';
+  . ipsUrl();
 
   if ($message !== null) { 
     $data = \IPS\Data\Store::i()->adminer_message ?? [];

@@ -1,73 +1,63 @@
 <?php
 
-
 namespace IPS\adminer\modules\admin\adminer;
 
-use Exception;
 use IPS\adminer\Application;
+use IPS\Dispatcher;
+use IPS\Dispatcher\Controller;
 use IPS\Http\Url;
 use IPS\Output;
+use IPS\Request;
 use IPS\Settings;
 use IPS\Theme;
+use Exception;
 
-use function _p;
-use function gzdecode;
-use function libxml_use_internal_errors;
-use function ob_end_clean;
-use function ob_get_clean;
-use function ob_start;
-use function pq;
-use function preg_replace_callback;
-use function str_replace;
-
+use function defined;
 use function header;
-use function mb_strpos;
-use function preg_replace;
-use const TRUE;
 
-
-if ( !\defined( '\IPS\SUITE_UNIQUE_KEY' ) )
-{
-	header( ( isset( $_SERVER['SERVER_PROTOCOL'] ) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0' ) . ' 403 Forbidden' );
-	exit;
+if (!defined('\IPS\SUITE_UNIQUE_KEY')) {
+    header((isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0') . ' 403 Forbidden');
+    exit;
 }
 
 /**
  * adminer
  */
-class _adminer extends \IPS\Dispatcher\Controller
+class _Adminer extends Controller
 {
     /**
- * @brief    Has been CSRF-protected
- */
+     * @brief    Has been CSRF-protected
+     */
     public static $csrfProtected = true;
-	/**
-	 * Execute
-	 *
-	 * @return	void
-	 */
-	public function execute()
-	{
-		\IPS\Dispatcher::i()->checkAcpPermission( 'adminer_manage' );
-		parent::execute();
-	}
 
-	/**
-	 * ...
-	 *
-	 * @return	void
-	 */
-	protected function manage()
-	{
-        if(\IPS\Request::i()->isAjax()){
+    /**
+     * Execute
+     *
+     * @return    void
+     */
+    public function execute()
+    {
+
+        Dispatcher::i()->checkAcpPermission('adminer_manage');
+        parent::execute();
+    }
+
+    /**
+     * ...
+     *
+     * @return    void
+     */
+    protected function manage()
+    {
+
+        if (Request::i()->isAjax()) {
             $this->adminer();
-        }
-        else {
-            ob_start(); 
-
+        } else {
+            //ob_start();
+            ob_start();
             require Application::getRootPath(
-                    'adminer'
-                ) . '/applications/adminer/sources/Adminer/db.php';
+                'adminer'
+            ) . '/applications/adminer/sources/AdminerDb/db.php';
             $content = ob_get_contents();
             try {
                 ob_end_clean();
@@ -90,12 +80,12 @@ class _adminer extends \IPS\Dispatcher\Controller
             require_once Application::getRootPath('core') . '/system/3rd_party/phpQuery/phpQuery.php';
             libxml_use_internal_errors(true);
             $phpQuery = \phpQuery::newDocumentHTML($content);
-            $css = [];
-            $js = [];
-            $url = (string)Url::internal('app=adminer&module=adminer&controller=adminer');
+            $css      = [];
+            $js       = [];
+            $url      = (string) Url::internal('app=adminer&module=adminer&controller=adminer');
             /** @var \DOMElement $link */
             foreach ($phpQuery->find('link') as $link) {
-                if($link->getAttribute('rel') !== 'stylesheet'){
+                if ($link->getAttribute('rel') !== 'stylesheet') {
                     continue;
                 }
                 $l = $link->getAttribute('href');
@@ -109,7 +99,7 @@ class _adminer extends \IPS\Dispatcher\Controller
                 $l = $script->getAttribute('src');
                 if ($l) {
                     pq($script)->remove();
-                   Output::i()->jsFiles[] = $url . str_replace('?', '&', $l);
+                    Output::i()->jsFiles[] = $url . str_replace('?', '&', $l);
                 } else {
                     $d = pq($script)->html();
                     $d = str_replace('?server', $url . '&server', $d);
@@ -119,23 +109,25 @@ class _adminer extends \IPS\Dispatcher\Controller
             foreach ($phpQuery->find('input') as $script) {
                 $l = $script->getAttribute('src');
                 if ($l) {
-                    pq($script)->attr('src',$url . str_replace('?', '&', $l));
+                    pq($script)->attr('src', $url . str_replace('?', '&', $l));
                 }
             }
-            foreach($phpQuery->find('form') as $form){
+            foreach ($phpQuery->find('form') as $form) {
                 $l = $form->getAttribute('action');
-                if(!$l){
-                    pq($form)->attr('action', (string)\IPS\Request::i()->url())
-                    ->append('<input type="hidden" name="formSubmitted" value="1">')
-                    ->append('<input type="hidden" name="target" value="'.Settings::i()->getFromConfGlobal('sql_database').'">');
+                if (!$l) {
+                    pq($form)->attr('action', (string) Request::i()->url())
+                        ->append('<input type="hidden" name="formSubmitted" value="1">')
+                        ->append('<input type="hidden" name="target" value="' . Settings::i()->getFromConfGlobal('sql_database') . '">');
                 }
             }
 
-
-            $url2 = (string)Url::internal('app=adminer&module=adminer&controller=adminer');
-
+            $url2 = Url::internal('app=adminer&module=adminer&controller=adminer');
+            if(Request::i()->dbApp){
+                $url2 = $url2->setQueryString(['dbApp'=>Request::i()->dbApp]);
+            }
+            $url2 = (string) $url2;
             foreach ($phpQuery->find('a') as $a) {
-                $a = pq($a);
+                $a   = pq($a);
                 $ref = $a->attr('href');
                 if (mb_strpos($ref, '?server=') !== false) {
                     $ref = str_replace('?server', $url2 . '&server', $ref);
@@ -151,13 +143,14 @@ class _adminer extends \IPS\Dispatcher\Controller
             Application::addCss(['adminer'], 'admin');
             Output::i()->output = Theme::i()->getTemplate('adminer', 'adminer', 'admin')->adminer($return);
         }
-	}
+    }
 
-    protected function adminer(){
+    protected function adminer()
+    {
         ob_start();
         require Application::getRootPath(
-                'toolbox'
-            ) . '/applications/adminer/sources/Adminer/db.php';
+            'toolbox'
+        ) . '/applications/adminer/sources/AdminerDb/db.php';
         $content = ob_get_contents();
         try {
             ob_end_clean();
@@ -165,5 +158,5 @@ class _adminer extends \IPS\Dispatcher\Controller
         }
         Output::i()->sendOutput($content);
     }
-	// Create new methods with the same name as the 'do' parameter which should execute it
+    // Create new methods with the same name as the 'do' parameter which should execute it
 }

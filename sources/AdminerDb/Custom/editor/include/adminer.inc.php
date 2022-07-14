@@ -1,4 +1,9 @@
 <?php
+
+use IPS\Application;
+use IPS\Member;
+use IPS\Request;
+
 class Adminer {
 	var $operators = array("<=", ">=");
 	var $_values = array();
@@ -615,6 +620,7 @@ qsl('div').onclick = whisperClick;", "")
 	}
 
 	function tablesPrint($tables) {
+
 		echo "<ul id='tables'>";
 		echo script("mixin(qs('#tables'), {onmouseover: menuOver, onmouseout: menuOut});");
 		foreach ($tables as $row) {

@@ -1,4 +1,5 @@
 <?php
+
 $drivers = array("server" => "MySQL") + $drivers;
 
 if (!defined("DRIVER")) {
@@ -471,10 +472,27 @@ if (!defined("DRIVER")) {
 	* @return array array($name => $type)
 	*/
 	function tables_list() {
-		return get_key_vals(min_version(5)
-			? "SELECT TABLE_NAME, TABLE_TYPE FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() ORDER BY TABLE_NAME"
-			: "SHOW TABLES"
-		);
+        $tables =  get_key_vals(min_version(5)
+            ? "SELECT TABLE_NAME, TABLE_TYPE FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() ORDER BY TABLE_NAME"
+            : "SHOW TABLES"
+        );
+        if(\IPS\Request::i()->dbApp){
+            $app = \IPS\Application::load(\IPS\Request::i()->dbApp);
+            $jsonPath = $app->getApplicationPath().'/data/schema.json';
+            if(file_exists($jsonPath)){
+                $appTables = json_decode(file_get_contents($jsonPath),true);
+                $keys = array_keys($appTables);
+                array_walk($keys,static function(&$value,$index){
+                    $value = 'TABLE_NAME='.q($value);
+                });
+                $where = implode(' OR ', $keys);
+                $tables = get_key_vals(
+                    "SELECT TABLE_NAME, TABLE_TYPE FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND (".$where.") ORDER BY TABLE_NAME"
+                );
+            }
+        }
+
+        return $tables;
 	}
 
 	/** Count tables in all databases
@@ -496,10 +514,24 @@ if (!defined("DRIVER")) {
 	*/
 	function table_status($name = "", $fast = false) {
 		$return = array();
-		foreach (get_rows($fast && min_version(5)
-			? "SELECT TABLE_NAME AS Name, ENGINE AS Engine, TABLE_COMMENT AS Comment FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() " . ($name != "" ? "AND TABLE_NAME = " . q($name) : "ORDER BY Name")
-			: "SHOW TABLE STATUS" . ($name != "" ? " LIKE " . q(addcslashes($name, "%_\\")) : "")
-		) as $row) {
+        $sql = $fast && min_version(5)
+            ? "SELECT TABLE_NAME AS Name, ENGINE AS Engine, TABLE_COMMENT AS Comment FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() " . ($name != "" ? "AND TABLE_NAME = " . q($name) : "ORDER BY Name")
+            : "SHOW TABLE STATUS" . ($name != "" ? " LIKE " . q(addcslashes($name, "%_\\")) : "");
+        if(\IPS\Request::i()->dbApp && !$name){
+            $app = \IPS\Application::load(\IPS\Request::i()->dbApp);
+            $jsonPath = $app->getApplicationPath().'/data/schema.json';
+            if(file_exists($jsonPath)){
+                $appTables = json_decode(file_get_contents($jsonPath),true);
+                $keys = array_keys($appTables);
+                array_walk($keys,static function(&$value,$index){
+                    $value = 'TABLE_NAME='.q($value);
+                });
+                $where = implode(' OR ', $keys);
+                    $sql = "SELECT TABLE_NAME AS Name, ENGINE AS Engine, TABLE_COMMENT AS Comment FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND (".$where.") ORDER BY TABLE_NAME";
+            }
+        }
+        $rows = get_rows($sql);
+		foreach ($rows as $row) {
 			if ($row["Engine"] == "InnoDB") {
 				// ignore internal comment, unnecessary since MySQL 5.1.21
 				$row["Comment"] = preg_replace('~(?:(.+); )?InnoDB free: .*~', '\1', $row["Comment"]);

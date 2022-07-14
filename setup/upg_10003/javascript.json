@@ -1,0 +1,16 @@
+{
+    "files": {
+        "added": [
+            "adminer\/admin\/controllers\/click\/ips.ui.functions.js"
+        ],
+        "edited": [
+            "adminer\/admin\/controllers\/click\/ips.ui.adminer.click.js"
+        ],
+        "removed": []
+    },
+    "orders": {
+        "added": [],
+        "edited": [],
+        "removed": []
+    }
+}

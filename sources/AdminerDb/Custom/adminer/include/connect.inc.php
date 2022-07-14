@@ -13,7 +13,6 @@ function connect_error() {
 		echo "<p class='links'>\n";
 		foreach (array(
 			'database' => lang('Create database'),
-			'privileges' => lang('Privileges'),
 			'processlist' => lang('Process list'),
 			'variables' => lang('Variables'),
 			'status' => lang('Status'),

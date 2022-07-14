@@ -8,15 +8,16 @@
 */
 
 use IPS\Settings;
-use IPS\adminer\Profiler\Debug;
+use IPS\toolbox\Profiler\Debug;
 use IPS\Dispatcher\Build;
 use IPS\Session\Front;
 
-$ipsPath = \str_replace('/applications/adminer/sources/Custom/adminer.php', '',
+$ipsPath = \str_replace('/applications/adminer/sources/AdminerDb/Custom/adminer.php', '',
         \str_replace('\\', '/', __FILE__)) . '/';
-
 require_once $ipsPath . 'init.php';
 
+Build::i();
+Front::i();
 $auth = [
     'driver' => 'server',
     'server' => Settings::i()->getFromConfGlobal('sql_host'),
@@ -30,9 +31,13 @@ $sql='mysql';
 function ipsDebug($message){
     Debug::log($message);
 };
-
-Build::i();
-Front::i();
+function ipsUrl(){
+    $url = (string) '&app=adminer&module=adminer&controller=adminer';
+    if(isset($_GET['dbApp'])){
+        $url .= '&dbApp='.$_GET['dbApp'];
+    }
+    return $url;
+}
 
 include "./include/bootstrap.inc.php";
 include "./include/tmpfile.inc.php";

@@ -1,6 +1,10 @@
 <?php
 // any method change in this file should be transferred to editor/include/adminer.inc.php and plugins/plugin.php
 
+use IPS\Application;
+use IPS\Member;
+use IPS\Request;
+
 class Adminer {
 	/** @var array operators used in select, null for all operators */
 	var $operators;
@@ -922,7 +926,8 @@ class Adminer {
 		echo '<p class="links">' . ($_GET["ns"] == "" && support("database") ? '<a href="' . h(ME) . 'database=">' . lang('Alter database') . "</a>\n" : "");
 		echo (support("scheme") ? "<a href='" . h(ME) . "scheme='>" . ($_GET["ns"] != "" ? lang('Alter schema') : lang('Create schema')) . "</a>\n" : "");
 		echo ($_GET["ns"] !== "" ? '<a href="' . h(ME) . 'schema=">' . lang('Database schema') . "</a>\n" : "");
-		echo (support("privileges") ? "<a href='" . h(ME) . "privileges='>" . lang('Privileges') . "</a>\n" : "");
+
+		//echo (support("privileges") ? "<a href='" . h(ME) . "privileges='>" . lang('Privileges') . "</a>\n" : "");
 		return true;
 	}
 
@@ -932,12 +937,6 @@ class Adminer {
 	*/
 	function navigation($missing) {
 		global $VERSION, $jush, $drivers, $connection;
-		?>
-<h1>
-<?php echo $this->name(); ?> <span class="version"><?php echo $VERSION; ?></span>
-<a href="https://www.adminer.org/#download"<?php echo target_blank(); ?> id="version"><?php echo (version_compare($VERSION, $_COOKIE["adminer_version"]) < 0 ? h($_COOKIE["adminer_version"]) : ""); ?></a>
-</h1>
-<?php
 		if ($missing == "auth") {
 			$output = "";
 			foreach ((array) $_SESSION["pwds"] as $vendor => $servers) {
@@ -1002,6 +1001,46 @@ bodyLoad('<?php echo (is_object($connection) ? preg_replace('~^(\d\.?\d).*~s', '
 				}
 			}
 		}
+        $url = \IPS\Request::i()->url()->stripQueryString(['dbApp']);
+
+        $opts = [
+            0 => '<option value="'.$url.'">Select App...</option>'
+        ];
+        $selected = \IPS\Request::i()->dbApp;
+        /** @var \IPS\Application $app */
+        foreach( \IPS\Application::applications() as $app ){
+            $path = $app->getApplicationPath().'/data/schema.json';
+            if(file_exists($path)) {
+                $data = json_decode(\file_get_contents($path),true);
+                if(empty($data) === false) {
+                    $lang = \IPS\Member::loggedIn()->language()->addToStack('__app_' . $app->directory);
+                    \IPS\Member::loggedIn()->language()->parseOutputForDisplay($lang);
+                    $extra = '';
+                    if ($selected === $app->directory) {
+                        $extra = ' selected';
+                    }
+                    $opts[$lang] = '<option value="' . $url . '&dbApp=' . $app->directory . '" ' . $extra . '>' . $lang . "</option>";
+                }
+            }
+        }
+        ksort($opts);
+        $options = implode('',$opts);
+        $body = <<<EOF
+<select id="limitDb">
+{$options}
+</select>
+
+<script> 
+    $(document).ready(function(){ 
+        $('p.links').css({"margin-top":$('#ipsLayout_header').outerHeight()})
+        $('#limitDb').on('change', function(){
+            let app = $(this).val();
+            location.assign(app);
+        })
+    })
+</script>
+EOF;
+        echo $body;
 	}
 
 	/** Prints databases list in menu
@@ -1047,6 +1086,7 @@ bodyLoad('<?php echo (is_object($connection) ? preg_replace('~^(\d\.?\d).*~s', '
 	* @return null
 	*/
 	function tablesPrint($tables) {
+
 		echo "<ul id='tables'>" . script("mixin(qs('#tables'), {onmouseover: menuOver, onmouseout: menuOut});");
 		foreach ($tables as $table => $status) {
 			$name = $this->tableName($status);
