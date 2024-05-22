@@ -284,7 +284,7 @@ if (isset($_GET["pgsql"])) {
 	function limit1($table, $query, $where, $separator = "\n") {
 		return (preg_match('~^INTO~', $query)
 			? limit($query, $where, 1, 0, $separator)
-			: " $query" . (is_view(table_status1($table)) ? $where : $separator . "WHERE ctid = (SELECT ctid FROM " . table($table) . $where . $separator . "LIMIT 1)")
+			: " $query" . (is_view(table_status1($table)) ? $where : " WHERE ctid = (SELECT ctid FROM " . table($table) . $where . $separator . "LIMIT 1)")
 		);
 	}
 
@@ -534,7 +534,7 @@ ORDER BY connamespace, conname") as $row) {
 		} elseif ($alter) {
 			array_unshift($queries, "ALTER TABLE " . table($table) . "\n" . implode(",\n", $alter));
 		}
-		if ($comment !== null) {
+		if ($table != "" || $comment != "") {
 			$queries[] = "COMMENT ON TABLE " . table($name) . " IS " . q($comment);
 		}
 		if ($auto_increment != "") {
